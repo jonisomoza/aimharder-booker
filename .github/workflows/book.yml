@@ -3,8 +3,8 @@ name: AimHarder Booker
 # Ejecuta cada hora y permite ejecución manual
 on:
   schedule:
-    - cron: '0 * * * *'   # cada hora en minuto 0 (ajusta si quieres otro intervalo)
-  workflow_dispatch:      # permite ejecución manual desde la UI
+    - cron: '0 18 * * *'
+  workflow_dispatch:
 
 jobs:
   book:
