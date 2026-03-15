@@ -20,9 +20,9 @@ def is_weekday(d):
     return d.weekday() < 5
 
 if __name__ == "__main__":
-    #if not is_local_19():
-     #   print("No es la hora local (19:00 Madrid). Saliendo.")
-      #  sys.exit(0)
+    if not is_local_19():
+        print("No es la hora local (19:00 Madrid). Saliendo.")
+        sys.exit(0)
 
     target = get_target_date()
     print("Target date:", target.isoformat())
@@ -43,5 +43,9 @@ if __name__ == "__main__":
             print("La reserva NO fue confirmada. Revisa screenshots/artifacts.")
     except Exception as e:
         print("Error en el proceso de booking:", e)
-        # La captura de pantalla ya se maneja dentro de book.py si es posible
+        # si hay función para guardar screenshot/HTML para debug, llamarla
+        try:
+            save_debug_screenshot("error")
+        except Exception:
+            pass
         raise
