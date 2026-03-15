@@ -1,0 +1,48 @@
+name: AimHarder Booker
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # se ejecuta cada hora; el script decide si actuar (19:00 Madrid)
+  workflow_dispatch:      # permite ejecutar manualmente desde la UI
+
+jobs:
+  book:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright python-dotenv requests
+          python -m playwright install --with-deps
+
+      - name: Restore storage_state from secret (if exists)
+        run: |
+          if [ -n "${{ secrets.AIMHARDER_STORAGE_STATE_B64 }}" ]; then
+            echo "${{ secrets.AIMHARDER_STORAGE_STATE_B64 }}" > /tmp/state.b64
+            base64 --decode /tmp/state.b64 > /tmp/storage_state.json
+            echo "Storage state restored to /tmp/storage_state.json"
+          else
+            echo "No storage_state secret found, will attempt login using credentials."
+          fi
+
+      - name: Run booking runner
+        env:
+          AIMHARDER_EMAIL: ${{ secrets.AIMHARDER_EMAIL }}
+          AIMHARDER_PASS:  ${{ secrets.AIMHARDER_PASS }}
+        run: |
+          python runner.py
+          
+      - name: Upload screenshots (if present)
+        uses: actions/upload-artifact@v4
+        with:
+          name: aim-screenshots
+          path: ./artifacts || true
