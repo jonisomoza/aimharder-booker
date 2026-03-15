@@ -52,7 +52,7 @@ def try_book_for_date(target_date: date, storage_state_path: str = None) -> bool
 
     with sync_playwright() as p:
         # headless=False para ver la UI localmente; cámbialo a True en Actions
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=True)
         
         # FORZAR LOGIN SIEMPRE: No usamos storage_state para iniciar sesión limpia
         print("[INFO] Iniciando sesión limpia (ignorando storage_state si existe).")
