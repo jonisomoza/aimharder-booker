@@ -1,13 +1,15 @@
 name: AimHarder Booker
 
+# Ejecuta cada hora y permite ejecución manual
 on:
   schedule:
-    - cron: '0 * * * *'   # se ejecuta cada hora; el script decide si actuar (19:00 Madrid)
-  workflow_dispatch:      # permite ejecutar manualmente desde la UI
+    - cron: '0 * * * *'   # cada hora en minuto 0 (ajusta si quieres otro intervalo)
+  workflow_dispatch:      # permite ejecución manual desde la UI
 
 jobs:
   book:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repo
@@ -21,28 +23,20 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install playwright python-dotenv requests
+          pip install -r requirements.txt || pip install playwright python-dotenv requests
+          # instala navegadores de Playwright
           python -m playwright install --with-deps
-
-      - name: Restore storage_state from secret (if exists)
-        run: |
-          if [ -n "${{ secrets.AIMHARDER_STORAGE_STATE_B64 }}" ]; then
-            echo "${{ secrets.AIMHARDER_STORAGE_STATE_B64 }}" > /tmp/state.b64
-            base64 --decode /tmp/state.b64 > /tmp/storage_state.json
-            echo "Storage state restored to /tmp/storage_state.json"
-          else
-            echo "No storage_state secret found, will attempt login using credentials."
-          fi
 
       - name: Run booking runner
         env:
           AIMHARDER_EMAIL: ${{ secrets.AIMHARDER_EMAIL }}
           AIMHARDER_PASS:  ${{ secrets.AIMHARDER_PASS }}
         run: |
+          # asegúrate de que runner.py está en la raíz y es ejecutable con python
           python runner.py
-          
-      - name: Upload screenshots (if present)
+
+      - name: Upload artifacts (screenshots/logs)
         uses: actions/upload-artifact@v4
         with:
-          name: aim-screenshots
-          path: ./artifacts || true
+          name: aim-artifacts
+          path: artifacts || true
